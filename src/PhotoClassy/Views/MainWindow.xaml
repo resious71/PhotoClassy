@@ -4,7 +4,8 @@
         Title="PhotoClassy - 사진 자동 분류"
         Width="1000" Height="860" MinWidth="820" MinHeight="680"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Malgun Gothic, Segoe UI" FontSize="13">
+        FontFamily="Malgun Gothic, Segoe UI" FontSize="13"
+        AutomationProperties.AutomationId="MainWindow">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Window.Resources>
@@ -94,7 +95,7 @@
         <DockPanel Grid.Row="1" Margin="0,0,0,8" LastChildFill="False">
             <Button DockPanel.Dock="Left" Content="설정 초기화" Command="{Binding ResetSettingsCommand}" Margin="0" />
             <Button DockPanel.Dock="Right" Content="취소" Command="{Binding CancelCommand}" MinWidth="100" />
-            <Button DockPanel.Dock="Right" Content="▶ 분류 시작" Command="{Binding StartCommand}" MinWidth="140"
+            <Button DockPanel.Dock="Right" Content="▶ 분류 시작" AutomationProperties.AutomationId="StartButton" Command="{Binding StartCommand}" MinWidth="140"
                     FontWeight="Bold" IsDefault="True" />
         </DockPanel>
 

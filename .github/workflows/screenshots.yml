@@ -1,0 +1,48 @@
+name: screenshots
+
+# 실제 Windows 에서 앱을 실행해 README 용 스크린샷을 캡처하고 docs/images/screenshots 에 커밋한다.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/screenshots/**'
+      - '.github/workflows/screenshots.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build app
+        run: dotnet build src/PhotoClassy/PhotoClassy.csproj -c Release
+
+      - name: Capture screenshots
+        shell: powershell
+        run: >
+          ./tools/screenshots/Capture-Screenshots.ps1
+          -AppDir "$env:GITHUB_WORKSPACE\src\PhotoClassy\bin\Release\net472"
+          -OutDir "$env:GITHUB_WORKSPACE\docs\images\screenshots"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: docs/images/screenshots
+
+      - name: Commit screenshots
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/images/screenshots
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "docs: 실제 앱 스크린샷 갱신 [skip ci]"
+          git push origin HEAD:${GITHUB_REF_NAME}

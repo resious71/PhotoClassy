@@ -5,7 +5,8 @@
   <Bundle Name="PhotoClassy"
           Manufacturer="PhotoClassy"
           Version="1.0.0.0"
-          UpgradeCode="3D8A6F1C-2B4E-4C7D-9E0F-5A1B3C5D7E92">
+          UpgradeCode="3D8A6F1C-2B4E-4C7D-9E0F-5A1B3C5D7E92"
+          IconSourceFile="..\..\src\PhotoClassy\PhotoClassy.ico">
 
     <BootstrapperApplication>
       <bal:WixStandardBootstrapperApplication LicenseFile="..\PhotoClassy.Installer\License.rtf"

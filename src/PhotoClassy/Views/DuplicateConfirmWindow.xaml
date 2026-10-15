@@ -3,15 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="중복 파일 확인" SizeToContent="WidthAndHeight" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
-        FontFamily="Malgun Gothic, Segoe UI" FontSize="13">
+        FontFamily="Malgun Gothic, Segoe UI" FontSize="13"
+        AutomationProperties.AutomationId="DuplicateConfirmWindow">
     <StackPanel Margin="20" MaxWidth="520">
         <TextBlock x:Name="CountText" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" />
         <TextBlock Text="_Duplicates 폴더에 저장되어 있습니다." />
         <TextBlock x:Name="FolderText" Foreground="Gray" TextWrapping="Wrap" Margin="0,2,0,12" />
         <TextBlock Text="이 파일들을 삭제하시겠습니까?" Margin="0,0,0,16" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="삭제" Click="OnDelete" MinWidth="90" />
-            <Button Content="보관" Click="OnKeep" MinWidth="90" IsDefault="True" IsCancel="True" />
+            <Button Content="삭제" Click="OnDelete" AutomationProperties.AutomationId="DeleteButton" MinWidth="90" />
+            <Button Content="보관" Click="OnKeep" AutomationProperties.AutomationId="KeepButton" MinWidth="90" IsDefault="True" IsCancel="True" />
         </StackPanel>
     </StackPanel>
 </Window>
