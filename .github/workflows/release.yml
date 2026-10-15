@@ -1,10 +1,16 @@
 name: release
 
-# v* 태그를 푸시하면 테스트 → 빌드 → 설치 파일을 만들어 GitHub Release 에 첨부한다.
+# v* 태그를 푸시하거나 Actions 탭에서 버전을 입력해 실행하면
+# 테스트 → 빌드 → 설치 파일을 만들어 GitHub Release 에 첨부한다. (수동 실행 시 태그도 함께 생성)
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '릴리스 버전 (예: v1.0.0)'
+        required: true
 
 permissions:
   contents: write
@@ -12,6 +18,8 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
+    env:
+      VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +36,7 @@ jobs:
       - name: Collect release files
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}"
+          $version = $env:VERSION
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           $msi = Get-ChildItem installer/PhotoClassy.Installer/bin -Recurse -Filter PhotoClassy.msi | Select-Object -First 1
           $exe = Get-ChildItem installer/PhotoClassy.Bundle/bin -Recurse -Filter PhotoClassySetup.exe | Select-Object -First 1
@@ -43,7 +51,7 @@ jobs:
       - name: Extract release notes
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}".TrimStart('v')
+          $version = $env:VERSION.TrimStart('v')
           $text = Get-Content CHANGELOG.md -Raw -Encoding UTF8
           $match = [regex]::Match($text, "(?ms)^## \[$([regex]::Escape($version))\][^\n]*\n(.*?)(?=^## \[|^\[)")
           $notes = if ($match.Success) { $match.Groups[1].Value.Trim() } else { "PhotoClassy $version" }
@@ -52,6 +60,8 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          name: PhotoClassy ${{ github.ref_name }}
+          tag_name: ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          name: PhotoClassy ${{ env.VERSION }}
           body_path: release-notes.md
           files: dist/*
