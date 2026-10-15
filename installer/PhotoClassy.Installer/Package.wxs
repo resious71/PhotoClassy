@@ -1,0 +1,90 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+     xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+
+  <!-- UpgradeCode 는 절대 변경하지 말 것 (업그레이드/제거 식별자) -->
+  <Package Name="PhotoClassy"
+           Manufacturer="PhotoClassy"
+           Version="1.0.0.0"
+           UpgradeCode="7B1E4C2A-5D8F-4A61-9C3E-2F0B6D4A8E17"
+           Language="1042"
+           Codepage="949"
+           Scope="perMachine">
+
+    <SummaryInformation Description="PhotoClassy - 사진 자동 분류" />
+
+    <MajorUpgrade DowngradeErrorMessage="더 최신 버전의 PhotoClassy 가 이미 설치되어 있습니다." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- .NET Framework 4.7.2 이상 필요 (번들 설치 파일은 자동으로 설치함) -->
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED" />
+    <Launch Condition="Installed OR WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED"
+            Message="PhotoClassy 를 실행하려면 .NET Framework 4.7.2 이상이 필요합니다. PhotoClassySetup.exe(번들)로 설치하거나 .NET Framework 를 먼저 설치하세요." />
+
+    <!-- Users 그룹 SID 조회 (config.json 쓰기 권한 부여용) -->
+    <PropertyRef Id="WIX_ACCOUNT_USERS" />
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="PhotoClassy" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppMenuFolder" Name="PhotoClassy" />
+    </StandardDirectory>
+
+    <Feature Id="Main" Title="PhotoClassy" Level="1" AllowAbsent="no">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="ConfigFile" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+
+    <Feature Id="DesktopShortcutFeature" Title="바탕 화면 바로 가기" Level="1">
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(var.PhotoClassy.TargetDir)**">
+        <Exclude Files="$(var.PhotoClassy.TargetDir)**\*.pdb" />
+        <Exclude Files="$(var.PhotoClassy.TargetDir)**\*.xml" />
+        <Exclude Files="$(var.PhotoClassy.TargetDir)config.json" />
+      </Files>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <!--
+      설정은 설치 폴더의 config.json 에 저장된다 (요구사항 확정).
+      Program Files 는 일반 사용자가 쓸 수 없으므로 기본 config.json 을 설치하고 그 파일에만 Users 쓰기 권한을 준다.
+      (폴더 전체에 쓰기 권한을 주면 실행 파일 교체 위험이 있으므로 파일 단위로 제한)
+      업그레이드 시 사용자 설정을 덮어쓰지 않는다.
+    -->
+    <Component Id="ConfigFile" Directory="INSTALLFOLDER" Guid="C4A1D2E3-6B7F-4C80-9A1B-3D5E7F9A0B21" NeverOverwrite="yes">
+      <File Id="ConfigJson" Source="config.json" Name="config.json" KeyPath="yes">
+        <util:PermissionEx User="[WIX_ACCOUNT_USERS]" GenericRead="yes" GenericWrite="yes" />
+      </File>
+      <RemoveFile Id="RemoveConfigTemp" Name="config.json.tmp" On="uninstall" />
+    </Component>
+
+    <Component Id="StartMenuShortcut" Directory="AppMenuFolder" Guid="5E2B7C14-8A3D-4F69-B0C2-1D4E6F8A9B33">
+      <Shortcut Id="StartMenuShortcutLink" Name="PhotoClassy" Description="사진 자동 분류"
+                Target="[INSTALLFOLDER]PhotoClassy.exe" WorkingDirectory="INSTALLFOLDER" />
+      <Shortcut Id="UninstallShortcut" Name="PhotoClassy 제거" Target="[System64Folder]msiexec.exe"
+                Arguments="/x [ProductCode]" />
+      <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\PhotoClassy" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="9F3C8D25-1B4E-4A7A-8C6D-2E5F7A9B0C44">
+      <Shortcut Id="DesktopShortcutLink" Name="PhotoClassy" Description="사진 자동 분류"
+                Target="[INSTALLFOLDER]PhotoClassy.exe" WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="Software\PhotoClassy" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <StandardDirectory Id="DesktopFolder" />
+  </Fragment>
+</Wix>

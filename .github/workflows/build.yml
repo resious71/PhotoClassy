@@ -1,0 +1,34 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Unit tests
+        run: dotnet test tests/PhotoClassy.Core.Tests/PhotoClassy.Core.Tests.csproj -c Release
+
+      - name: Build WPF app (.NET Framework 4.7.2)
+        run: dotnet build src/PhotoClassy/PhotoClassy.csproj -c Release
+
+      - name: Build installer (MSI + bundle with .NET Framework)
+        run: dotnet build installer/PhotoClassy.Bundle/PhotoClassy.Bundle.wixproj -c Release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhotoClassy-installer
+          path: |
+            installer/PhotoClassy.Installer/bin/x64/Release/**/*.msi
+            installer/PhotoClassy.Installer/bin/Release/**/*.msi
+            installer/PhotoClassy.Bundle/bin/x64/Release/**/*.exe
+            installer/PhotoClassy.Bundle/bin/Release/**/*.exe
+          if-no-files-found: warn
