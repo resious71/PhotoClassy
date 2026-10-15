@@ -23,7 +23,9 @@ namespace PhotoClassy.Views
             AddRow(StatsGrid, "이동/복사된 파일 수", $"{result.Transferred:N0}개");
             AddRow(StatsGrid, "중복 파일 수", $"{result.Duplicates:N0}개");
             AddRow(StatsGrid, "실패한 파일 수", $"{result.Failed:N0}개");
-            AddRow(StatsGrid, "건너뛴 파일 수", $"{result.Skipped:N0}개 (확장자 필터)");
+            AddRow(StatsGrid, "건너뛴 파일 수", result.SkippedHiddenOrSystem > 0
+                ? $"{result.Skipped:N0}개 (확장자 필터, 숨김/시스템 파일 {result.SkippedHiddenOrSystem:N0}개 포함)"
+                : $"{result.Skipped:N0}개 (확장자 필터)");
             if (result.Renamed > 0)
                 AddRow(StatsGrid, "이름이 변경된 파일", $"{result.Renamed:N0}개 (같은 파일명 존재)");
             if (result.FallbackDates > 0)

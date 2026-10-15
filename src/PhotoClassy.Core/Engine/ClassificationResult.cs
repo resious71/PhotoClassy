@@ -29,8 +29,11 @@ namespace PhotoClassy.Core.Engine
 
         public int Failed { get; set; }
 
-        /// <summary>확장자 필터로 건너뛴 파일 수.</summary>
+        /// <summary>건너뛴 파일 수 (확장자 필터 + 숨김/시스템 파일).</summary>
         public int Skipped { get; set; }
+
+        /// <summary>건너뛴 파일 중 숨김/시스템 파일 수.</summary>
+        public int SkippedHiddenOrSystem { get; set; }
 
         /// <summary>같은 파일명이 있어 이름을 바꾼 파일 수.</summary>
         public int Renamed { get; set; }

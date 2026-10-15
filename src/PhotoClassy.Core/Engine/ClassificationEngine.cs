@@ -101,6 +101,12 @@ namespace PhotoClassy.Core.Engine
                     {
                         result.Skipped++;
                     }
+                    else if (IsHiddenOrSystem(path))
+                    {
+                        // Thumbs.db, desktop.ini 같은 Windows 숨김/시스템 파일은 대상에서 제외
+                        result.Skipped++;
+                        result.SkippedHiddenOrSystem++;
+                    }
                     else
                     {
                         try
@@ -119,7 +125,9 @@ namespace PhotoClassy.Core.Engine
                 }
                 reporter.Report(allFiles.Count, null, force: true);
                 result.TotalFiles = items.Count;
-                log(new LogEntry(LogLevel.Info, $"필터 적용: 대상 {items.Count}개, 건너뜀 {result.Skipped}개"));
+                log(new LogEntry(LogLevel.Info,
+                    $"필터 적용: 대상 {items.Count}개, 건너뜀 {result.Skipped}개" +
+                    (result.SkippedHiddenOrSystem > 0 ? $" (숨김/시스템 파일 {result.SkippedHiddenOrSystem}개 포함)" : string.Empty)));
 
                 CheckFreeSpace(settings, items, target);
 
@@ -338,6 +346,19 @@ namespace PhotoClassy.Core.Engine
                 }
             }
             return existing;
+        }
+
+        private static bool IsHiddenOrSystem(string path)
+        {
+            try
+            {
+                return (File.GetAttributes(path) & (FileAttributes.Hidden | FileAttributes.System)) != 0;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // 속성을 읽지 못하면 대상에 포함하고, 이후 단계에서 오류로 처리되게 한다.
+                return false;
+            }
         }
 
         private static void MarkFailed(ClassificationResult result, FileItem item, string error, Action<LogEntry> log,

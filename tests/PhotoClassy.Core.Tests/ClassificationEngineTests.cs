@@ -110,6 +110,23 @@ public class ClassificationEngineTests
     }
 
     [Fact]
+    public void HiddenOrSystemFiles_AreSkipped()
+    {
+        using var dir = new TempDir();
+        dir.CreateFile("src/a.jpg", "a", new DateTime(2024, 1, 1));
+        // Linux 에서는 점(.)으로 시작하는 파일이 숨김, Windows 에서는 속성으로 숨김
+        var hidden = dir.CreateFile("src/.Thumbs.db", "t", new DateTime(2024, 1, 1));
+        File.SetAttributes(hidden, File.GetAttributes(hidden) | FileAttributes.Hidden);
+
+        var result = Run(new AppSettings { SourceFolders = { dir.Combine("src") }, TargetFolder = dir.Combine("out") });
+
+        Assert.Equal(1, result.Transferred);
+        Assert.Equal(1, result.Skipped);
+        Assert.Equal(1, result.SkippedHiddenOrSystem);
+        Assert.True(File.Exists(hidden));
+    }
+
+    [Fact]
     public void InsufficientSpace_AbortsBeforeTouchingFiles()
     {
         using var dir = new TempDir();
