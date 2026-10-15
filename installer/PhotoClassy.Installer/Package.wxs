@@ -23,7 +23,7 @@
             Message="PhotoClassy 를 실행하려면 .NET Framework 4.7.2 이상이 필요합니다. PhotoClassySetup.exe(번들)로 설치하거나 .NET Framework 를 먼저 설치하세요." />
 
     <!-- Users 그룹 SID 조회 (config.json 쓰기 권한 부여용) -->
-    <PropertyRef Id="WIX_ACCOUNT_USERS" />
+    <util:QueryWindowsWellKnownSIDs />
 
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="INSTALLFOLDER" Name="PhotoClassy" />
