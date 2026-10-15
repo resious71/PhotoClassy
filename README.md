@@ -193,6 +193,8 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+또는 GitHub 의 **Actions → release → Run workflow** 에서 버전(예: `v1.0.1`)을 입력해 실행하면 태그와 릴리스가 함께 만들어집니다.
+
 버전은 `src/PhotoClassy/PhotoClassy.csproj`, `installer/PhotoClassy.Installer/Package.wxs`, `installer/PhotoClassy.Bundle/Bundle.wxs` 에 있습니다.
 
 ## 🤝 기여하기
