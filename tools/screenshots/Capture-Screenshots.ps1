@@ -217,6 +217,13 @@ try {
     Save-Window $dup 'duplicates'
     Invoke-Button $dup 'KeepButton'
 
+    # 진행 화면은 후반부(이동/복사 단계) 하나만 남긴다
+    $shots = @(Get-ChildItem $OutDir -Filter 'progress-*.png' | Sort-Object Name)
+    if ($shots.Count -gt 0) {
+        Copy-Item $shots[[int][Math]::Floor($shots.Count * 0.6)].FullName (Join-Path $OutDir 'progress.png')
+        $shots | Remove-Item -Force
+    }
+
     $summary = Find-Window 'SummaryWindow' 60
     Save-Window $summary 'summary'
     Invoke-Button $summary 'OkButton'

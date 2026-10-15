@@ -34,10 +34,13 @@ namespace PhotoClassy.Core.Progress
             return $"{value.Seconds}초";
         }
 
-        /// <summary>파일당 평균 처리 시간. 예: "2.64초/파일"</summary>
+        /// <summary>파일당 평균 처리 시간. 예: "2.64초/파일", 0.1초 미만은 "1.5ms/파일"</summary>
         public static string PerFile(TimeSpan value)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.00}초/파일", value.TotalSeconds);
+            if (value < TimeSpan.Zero) value = TimeSpan.Zero;
+            return value.TotalSeconds >= 0.1 || value == TimeSpan.Zero
+                ? string.Format(CultureInfo.InvariantCulture, "{0:0.00}초/파일", value.TotalSeconds)
+                : string.Format(CultureInfo.InvariantCulture, "{0:0.0}ms/파일", value.TotalMilliseconds);
         }
 
         /// <summary>예상 완료 시각. 예: "약 오후 3:45 완료 예상"</summary>
