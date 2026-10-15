@@ -126,11 +126,33 @@ function Find-Window([string]$AutomationId, [int]$TimeoutSeconds = 60) {
     $cond = New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::AutomationIdProperty), $AutomationId
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     while ((Get-Date) -lt $deadline) {
-        $w = $root.FindFirst($scope::Children, $cond)
+        $w = Find-WindowNow $cond
         if ($w) { return $w }
         Start-Sleep -Milliseconds 200
     }
+    Save-Screen 'error-screen'
     throw "Window '$AutomationId' not found"
+}
+
+# WPF 의 소유된 대화상자는 UI 자동화 트리에서 소유자 창의 자식으로 나타난다.
+function Find-WindowNow($cond) {
+    $w = $root.FindFirst($scope::Children, $cond)
+    if ($w) { return $w }
+    $pidCond = New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::ProcessIdProperty), $process.Id
+    foreach ($top in $root.FindAll($scope::Children, $pidCond)) {
+        $w = $top.FindFirst($scope::Children, $cond)
+        if ($w) { return $w }
+    }
+    return $null
+}
+
+function Save-Screen([string]$Name) {
+    $bmp = New-Object System.Drawing.Bitmap $screen.Width, $screen.Height
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.CopyFromScreen(0, 0, 0, 0, $bmp.Size)
+    $g.Dispose()
+    $bmp.Save((Join-Path $OutDir "$Name.png"), [System.Drawing.Imaging.ImageFormat]::Png)
+    $bmp.Dispose()
 }
 
 function Invoke-Button($Window, [string]$AutomationId) {
@@ -169,7 +191,7 @@ try {
     $dupCond = New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::AutomationIdProperty), 'DuplicateConfirmWindow'
     for ($i = 1; $i -le 12; $i++) {
         Start-Sleep -Milliseconds 1200
-        if ($root.FindFirst($scope::Children, $dupCond)) { break }
+        if (Find-WindowNow $dupCond) { break }
         Save-Window $main ('progress-{0:00}' -f $i)
     }
 

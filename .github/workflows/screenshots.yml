@@ -38,6 +38,7 @@ jobs:
           path: docs/images/screenshots
 
       - name: Commit screenshots
+        if: always()
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
