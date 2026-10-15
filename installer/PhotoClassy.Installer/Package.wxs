@@ -17,6 +17,9 @@
     <MajorUpgrade DowngradeErrorMessage="더 최신 버전의 PhotoClassy 가 이미 설치되어 있습니다." />
     <MediaTemplate EmbedCab="yes" />
 
+    <Icon Id="AppIcon.ico" SourceFile="..\..\src\PhotoClassy\PhotoClassy.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+
     <!-- .NET Framework 4.7.2 이상 필요 (번들 설치 파일은 자동으로 설치함) -->
     <PropertyRef Id="WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED" />
     <Launch Condition="Installed OR WIX_IS_NETFRAMEWORK_472_OR_LATER_INSTALLED"
@@ -72,7 +75,7 @@
 
     <Component Id="StartMenuShortcut" Directory="AppMenuFolder" Guid="5E2B7C14-8A3D-4F69-B0C2-1D4E6F8A9B33">
       <Shortcut Id="StartMenuShortcutLink" Name="PhotoClassy" Description="사진 자동 분류"
-                Target="[INSTALLFOLDER]PhotoClassy.exe" WorkingDirectory="INSTALLFOLDER" />
+                Target="[INSTALLFOLDER]PhotoClassy.exe" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon.ico" />
       <Shortcut Id="UninstallShortcut" Name="PhotoClassy 제거" Target="[System64Folder]msiexec.exe"
                 Arguments="/x [ProductCode]" />
       <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
@@ -81,7 +84,7 @@
 
     <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="9F3C8D25-1B4E-4A7A-8C6D-2E5F7A9B0C44">
       <Shortcut Id="DesktopShortcutLink" Name="PhotoClassy" Description="사진 자동 분류"
-                Target="[INSTALLFOLDER]PhotoClassy.exe" WorkingDirectory="INSTALLFOLDER" />
+                Target="[INSTALLFOLDER]PhotoClassy.exe" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon.ico" />
       <RegistryValue Root="HKCU" Key="Software\PhotoClassy" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
     </Component>
 

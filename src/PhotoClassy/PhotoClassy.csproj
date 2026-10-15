@@ -9,6 +9,7 @@
     <RootNamespace>PhotoClassy</RootNamespace>
     <AssemblyName>PhotoClassy</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>PhotoClassy.ico</ApplicationIcon>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Version>1.0.0</Version>
     <Product>PhotoClassy</Product>

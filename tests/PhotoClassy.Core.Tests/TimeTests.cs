@@ -35,6 +35,8 @@ public class TimeTests
         Assert.Equal("5분 30초", TimeFormatter.Korean(new TimeSpan(0, 5, 30)));
         Assert.Equal("11분 0초", TimeFormatter.Korean(TimeSpan.FromMinutes(11)));
         Assert.Equal("2.64초/파일", TimeFormatter.PerFile(TimeSpan.FromMilliseconds(2640)));
+        Assert.Equal("1.5ms/파일", TimeFormatter.PerFile(TimeSpan.FromTicks(15000)));
+        Assert.Equal("0.00초/파일", TimeFormatter.PerFile(TimeSpan.Zero));
         // ICU 버전에 따라 PM 앞 공백이 U+202F 일 수 있어 정규화 후 비교
         var completion = TimeFormatter.Completion(new DateTime(2026, 1, 1, 15, 45, 0), CultureInfo.GetCultureInfo("en-US"));
         Assert.Equal("약 3:45 PM 완료 예상", completion.Replace('\u202F', ' '));

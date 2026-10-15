@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4F8DF7"/>
+      <stop offset="1" stop-color="#2459C9"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E8F1FF"/>
+      <stop offset="1" stop-color="#C9DCFB"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#bg)"/>
+  <!-- back photo (stacked) -->
+  <rect x="70" y="50" width="132" height="104" rx="12" fill="#FFFFFF" opacity="0.45" transform="rotate(8 136 102)"/>
+  <!-- front photo -->
+  <rect x="48" y="64" width="140" height="112" rx="12" fill="#FFFFFF"/>
+  <rect x="58" y="74" width="120" height="84" rx="6" fill="url(#sky)"/>
+  <circle cx="152" cy="96" r="11" fill="#FFC542"/>
+  <path d="M58 150 L92 112 L116 136 L136 118 L178 154 L178 158 L58 158 Z" fill="#3BB273"/>
+  <path d="M58 158 L58 146 L92 112 L104 125 L74 158 Z" fill="#2E9A61"/>
+  <!-- calendar badge -->
+  <g transform="translate(140 132)">
+    <rect x="0" y="0" width="84" height="84" rx="16" fill="#FFFFFF"/>
+    <rect x="0" y="0" width="84" height="26" rx="16" fill="#FF6B5E"/>
+    <rect x="0" y="14" width="84" height="12" fill="#FF6B5E"/>
+    <rect x="18" y="-8" width="8" height="18" rx="4" fill="#1E3A8A"/>
+    <rect x="58" y="-8" width="8" height="18" rx="4" fill="#1E3A8A"/>
+    <rect x="14" y="36" width="14" height="12" rx="3" fill="#2459C9"/>
+    <rect x="35" y="36" width="14" height="12" rx="3" fill="#C9DCFB"/>
+    <rect x="56" y="36" width="14" height="12" rx="3" fill="#C9DCFB"/>
+    <rect x="14" y="56" width="14" height="12" rx="3" fill="#C9DCFB"/>
+    <rect x="35" y="56" width="14" height="12" rx="3" fill="#2459C9"/>
+    <rect x="56" y="56" width="14" height="12" rx="3" fill="#C9DCFB"/>
+  </g>
+</svg>

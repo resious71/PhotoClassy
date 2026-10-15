@@ -55,6 +55,8 @@ namespace PhotoClassy.Core.Engine
 
             var result = new ClassificationResult { StartTime = DateTime.Now };
             var reporter = new Reporter(progress, result.StartTime);
+            var sources = new List<string>();
+            var movedFromFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             try
             {
@@ -82,7 +84,7 @@ namespace PhotoClassy.Core.Engine
 
                 // 1. 스캔 (대상 폴더는 탐색에서 제외)
                 reporter.BeginStage(ProcessingStage.Scanning, 0);
-                var sources = settings.SourceFolders.Select(PathUtil.Normalize).ToList();
+                sources = settings.SourceFolders.Select(PathUtil.Normalize).ToList();
                 var scanned = 0;
                 var allFiles = FileScanner.Scan(sources, new[] { target }, log,
                     path => reporter.Report(++scanned, path), cancellationToken);
@@ -100,6 +102,12 @@ namespace PhotoClassy.Core.Engine
                     if (!filter.IsMatch(path))
                     {
                         result.Skipped++;
+                    }
+                    else if (IsHiddenOrSystem(path))
+                    {
+                        // Thumbs.db, desktop.ini 같은 Windows 숨김/시스템 파일은 대상에서 제외
+                        result.Skipped++;
+                        result.SkippedHiddenOrSystem++;
                     }
                     else
                     {
@@ -119,7 +127,9 @@ namespace PhotoClassy.Core.Engine
                 }
                 reporter.Report(allFiles.Count, null, force: true);
                 result.TotalFiles = items.Count;
-                log(new LogEntry(LogLevel.Info, $"필터 적용: 대상 {items.Count}개, 건너뜀 {result.Skipped}개"));
+                log(new LogEntry(LogLevel.Info,
+                    $"필터 적용: 대상 {items.Count}개, 건너뜀 {result.Skipped}개" +
+                    (result.SkippedHiddenOrSystem > 0 ? $" (숨김/시스템 파일 {result.SkippedHiddenOrSystem}개 포함)" : string.Empty)));
 
                 CheckFreeSpace(settings, items, target);
 
@@ -148,7 +158,7 @@ namespace PhotoClassy.Core.Engine
                     $"중복 검사 완료: 대상 폴더 기존 파일 {existing.Count}개와 비교, 중복 {duplicateCount}개"));
 
                 // 5. 이동/복사
-                Transfer(settings, target, items, result, reporter, log, cancellationToken);
+                Transfer(settings, target, items, result, reporter, log, movedFromFolders, cancellationToken);
 
                 result.Status = RunStatus.Completed;
                 reporter.BeginStage(ProcessingStage.Completed, items.Count, items.Count);
@@ -173,6 +183,14 @@ namespace PhotoClassy.Core.Engine
                 result.AbortReason = $"예기치 않은 오류: {ex.Message}";
                 reporter.BeginStage(ProcessingStage.Failed, 0);
                 log(new LogEntry(LogLevel.Error, $"작업 중단 - {result.AbortReason}"));
+            }
+
+            // 이동 모드: 파일을 옮겨 낸 뒤 비게 된 소스 하위 폴더 삭제 (취소/중단된 경우에도 옮긴 만큼 정리)
+            if (settings.Operation == FileOperation.Move && movedFromFolders.Count > 0)
+            {
+                result.RemovedEmptyFolders = EmptyFolderCleaner.RemoveEmptyFolders(movedFromFolders, sources, log);
+                if (result.RemovedEmptyFolders > 0)
+                    log(new LogEntry(LogLevel.Info, $"비어 있게 된 소스 폴더 {result.RemovedEmptyFolders}개를 삭제했습니다."));
             }
 
             result.EndTime = DateTime.Now;
@@ -218,7 +236,7 @@ namespace PhotoClassy.Core.Engine
         }
 
         private void Transfer(AppSettings settings, string target, List<FileItem> items, ClassificationResult result,
-            Reporter reporter, Action<LogEntry> log, CancellationToken cancellationToken)
+            Reporter reporter, Action<LogEntry> log, HashSet<string> movedFromFolders, CancellationToken cancellationToken)
         {
             var work = items.Where(i => i.Status != FileItemStatus.Failed).ToList();
             reporter.BeginStage(ProcessingStage.Transferring, work.Count);
@@ -270,6 +288,8 @@ namespace PhotoClassy.Core.Engine
                 }
 
                 item.DestinationPath = outcome.DestinationPath;
+                if (settings.Operation == FileOperation.Move)
+                    movedFromFolders.Add(Path.GetDirectoryName(item.SourcePath));
                 if (outcome.Renamed)
                 {
                     result.Renamed++;
@@ -338,6 +358,19 @@ namespace PhotoClassy.Core.Engine
                 }
             }
             return existing;
+        }
+
+        private static bool IsHiddenOrSystem(string path)
+        {
+            try
+            {
+                return (File.GetAttributes(path) & (FileAttributes.Hidden | FileAttributes.System)) != 0;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // 속성을 읽지 못하면 대상에 포함하고, 이후 단계에서 오류로 처리되게 한다.
+                return false;
+            }
         }
 
         private static void MarkFailed(ClassificationResult result, FileItem item, string error, Action<LogEntry> log,

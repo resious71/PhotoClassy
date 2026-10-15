@@ -17,9 +17,6 @@ namespace PhotoClassy.Views
             _viewModel = new MainViewModel(new DialogService(this), SettingsService.ForInstallFolder());
             _viewModel.LogAdded += OnLogAdded;
             DataContext = _viewModel;
-
-            if (AdminHelper.IsAdministrator())
-                Title += " (관리자)";
         }
 
         private void OnLogAdded(object sender, EventArgs e)

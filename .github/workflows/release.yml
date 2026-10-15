@@ -1,0 +1,57 @@
+name: release
+
+# v* 태그를 푸시하면 테스트 → 빌드 → 설치 파일을 만들어 GitHub Release 에 첨부한다.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Unit tests
+        run: dotnet test tests/PhotoClassy.Core.Tests/PhotoClassy.Core.Tests.csproj -c Release
+
+      - name: Build installer
+        run: dotnet build installer/PhotoClassy.Bundle/PhotoClassy.Bundle.wixproj -c Release
+
+      - name: Collect release files
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $msi = Get-ChildItem installer/PhotoClassy.Installer/bin -Recurse -Filter PhotoClassy.msi | Select-Object -First 1
+          $exe = Get-ChildItem installer/PhotoClassy.Bundle/bin -Recurse -Filter PhotoClassySetup.exe | Select-Object -First 1
+          Copy-Item $msi.FullName "dist/PhotoClassy-$version.msi"
+          Copy-Item $exe.FullName "dist/PhotoClassySetup-$version.exe"
+          # 설치 없이 실행하는 포터블 zip
+          Compress-Archive -Path src/PhotoClassy/bin/Release/net472/* -DestinationPath "dist/PhotoClassy-$version-portable.zip"
+          Get-ChildItem dist | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash, $_.Name } |
+            Set-Content dist/SHA256SUMS.txt
+          Get-ChildItem dist
+
+      - name: Extract release notes
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $text = Get-Content CHANGELOG.md -Raw -Encoding UTF8
+          $match = [regex]::Match($text, "(?ms)^## \[$([regex]::Escape($version))\][^\n]*\n(.*?)(?=^## \[|^\[)")
+          $notes = if ($match.Success) { $match.Groups[1].Value.Trim() } else { "PhotoClassy $version" }
+          $notes += "`n`n## 설치`n- **PhotoClassySetup-v$version.exe**: 권장. .NET Framework 4.7.2 가 없으면 함께 설치합니다.`n- **PhotoClassy-v$version.msi**: .NET Framework 4.7.2 이상이 이미 설치된 PC 용.`n- **PhotoClassy-v$version-portable.zip**: 설치 없이 압축을 풀어 실행."
+          Set-Content -Path release-notes.md -Value $notes -Encoding UTF8
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: PhotoClassy ${{ github.ref_name }}
+          body_path: release-notes.md
+          files: dist/*
