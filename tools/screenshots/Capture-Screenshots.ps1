@@ -16,10 +16,18 @@ using System.Runtime.InteropServices;
 public static class Win32 {
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
     [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int w, int h, bool repaint);
+    [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
+    [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr hWnd, int attr, out RECT rect, int size);
+    // 그림자/투명 테두리를 뺀 실제 창 영역
+    public static RECT FrameBounds(IntPtr hWnd) {
+        RECT r; DwmGetWindowAttribute(hWnd, 9 /* DWMWA_EXTENDED_FRAME_BOUNDS */, out r, Marshal.SizeOf(typeof(RECT)));
+        return r;
+    }
 }
 "@
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+Get-ChildItem $OutDir -File | Remove-Item -Force
 
 try { Set-DisplayResolution -Width 1920 -Height 1080 -Force -ErrorAction Stop; Start-Sleep -Seconds 2 } catch { Write-Host "Set-DisplayResolution unavailable: $_" }
 $screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
@@ -94,11 +102,21 @@ for ($i = 0; $i -lt 6; $i++) {
 # 같은 파일명, 다른 내용 (이름 변경 _1)
 New-Photo (Join-Path $phone 'IMG_1001.jpg') (Get-Date '2024-03-15') $false ([System.Drawing.Imaging.ImageFormat]::Jpeg)
 [System.IO.File]::SetLastWriteTime((Join-Path $phone 'IMG_1001.jpg'), (Get-Date '2024-03-15'))
-# 동영상 (진행 화면을 보여주기 위해 개수/용량을 넉넉히)
-$buffer = New-Object byte[] (3MB)
-for ($i = 1; $i -le 450; $i++) {
+# 동영상 (진행 화면을 캡처할 수 있도록 파일 수를 넉넉히. 크기는 모두 달라 해시 계산은 생략됨)
+for ($i = 1; $i -le 300; $i++) {
+    $buffer = New-Object byte[] (2MB + $i * 13)
     $rand.NextBytes($buffer)
     $path = Join-Path $videos ('VID_{0:0000}.mp4' -f $i)
+    [System.IO.File]::WriteAllBytes($path, $buffer)
+    [System.IO.File]::SetLastWriteTime($path, $start.AddDays($rand.Next(0, 900)))
+}
+# 휴대폰 백업 (작은 파일 다수)
+$backup = Join-Path $phone 'Backup'
+New-Item -ItemType Directory -Force -Path $backup | Out-Null
+for ($i = 1; $i -le 6000; $i++) {
+    $buffer = New-Object byte[] (20000 + $i)
+    $rand.NextBytes($buffer)
+    $path = Join-Path $backup ('IMG_{0:00000}.heic' -f $i)
     [System.IO.File]::WriteAllBytes($path, $buffer)
     [System.IO.File]::SetLastWriteTime($path, $start.AddDays($rand.Next(0, 900)))
 }
@@ -162,19 +180,19 @@ function Invoke-Button($Window, [string]$AutomationId) {
     $button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
 }
 
-function Save-Window($Window, [string]$Name) {
+function Save-Window($Window, [string]$Name, [int]$DelayMs = 700) {
     $hwnd = [IntPtr]$Window.Current.NativeWindowHandle
     [Win32]::SetForegroundWindow($hwnd) | Out-Null
-    Start-Sleep -Milliseconds 700
-    $r = $Window.Current.BoundingRectangle
-    $bmp = New-Object System.Drawing.Bitmap ([int]$r.Width), ([int]$r.Height)
+    Start-Sleep -Milliseconds $DelayMs
+    $r = [Win32]::FrameBounds($hwnd)
+    $bmp = New-Object System.Drawing.Bitmap ($r.Right - $r.Left), ($r.Bottom - $r.Top)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.CopyFromScreen([int]$r.X, [int]$r.Y, 0, 0, $bmp.Size)
+    $g.CopyFromScreen($r.Left, $r.Top, 0, 0, $bmp.Size)
     $g.Dispose()
     $file = Join-Path $OutDir "$Name.png"
     $bmp.Save($file, [System.Drawing.Imaging.ImageFormat]::Png)
     $bmp.Dispose()
-    Write-Host "Saved $file ($([int]$r.Width)x$([int]$r.Height))"
+    Write-Host "Saved $file ($($r.Right - $r.Left)x$($r.Bottom - $r.Top))"
 }
 
 # ---------------------------------------------------------------- 캡처
@@ -189,10 +207,10 @@ try {
 
     Invoke-Button $main 'StartButton'
     $dupCond = New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::AutomationIdProperty), 'DuplicateConfirmWindow'
-    for ($i = 1; $i -le 12; $i++) {
-        Start-Sleep -Milliseconds 1200
+    for ($i = 1; $i -le 40; $i++) {
+        Start-Sleep -Milliseconds 300
         if (Find-WindowNow $dupCond) { break }
-        Save-Window $main ('progress-{0:00}' -f $i)
+        Save-Window $main ('progress-{0:00}' -f $i) 50
     }
 
     $dup = Find-Window 'DuplicateConfirmWindow' 300
