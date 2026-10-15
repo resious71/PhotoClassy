@@ -189,7 +189,8 @@ public class ClassificationEngineTests
         public FailingFor(string path) => _path = path;
 
         public DateResult Extract(string path) =>
-            path == _path ? new DateResult { Error = "broken" } : _inner.Extract(path);
+            // Windows 에서는 8.3 짧은 경로(RUNNER~1)가 확장될 수 있어 파일명으로 비교
+            Path.GetFileName(path) == Path.GetFileName(_path) ? new DateResult { Error = "broken" } : _inner.Extract(path);
     }
 
     private sealed class SyncProgress : IProgress<ProgressInfo>
