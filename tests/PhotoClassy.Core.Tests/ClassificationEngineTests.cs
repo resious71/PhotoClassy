@@ -110,6 +110,49 @@ public class ClassificationEngineTests
     }
 
     [Fact]
+    public void Move_RemovesFoldersThatBecameEmpty_KeepsOthers()
+    {
+        using var dir = new TempDir();
+        var date = new DateTime(2024, 1, 1);
+        dir.CreateFile("src/2023/trip/day1/a.jpg", "a", date);
+        dir.CreateFile("src/keep/b.jpg", "b", date);
+        dir.CreateFile("src/keep/notes.txt", "n", date);
+        Directory.CreateDirectory(dir.Combine("src", "was-empty"));
+        var settings = new AppSettings
+        {
+            SourceFolders = { dir.Combine("src") },
+            TargetFolder = dir.Combine("out"),
+            BarringExtensions = { ".txt" }
+        };
+
+        var result = Run(settings);
+
+        Assert.Equal(2, result.Transferred);
+        Assert.Equal(3, result.RemovedEmptyFolders);              // day1, trip, 2023
+        Assert.False(Directory.Exists(dir.Combine("src", "2023")));
+        Assert.True(Directory.Exists(dir.Combine("src", "keep")));  // notes.txt 남아 있음
+        Assert.True(Directory.Exists(dir.Combine("src", "was-empty"))); // 원래 비어 있던 폴더는 유지
+        Assert.True(Directory.Exists(dir.Combine("src")));          // 소스 폴더 자체는 유지
+    }
+
+    [Fact]
+    public void Copy_DoesNotRemoveFolders()
+    {
+        using var dir = new TempDir();
+        dir.CreateFile("src/sub/a.jpg", "a", new DateTime(2024, 1, 1));
+
+        var result = Run(new AppSettings
+        {
+            SourceFolders = { dir.Combine("src") },
+            TargetFolder = dir.Combine("out"),
+            Operation = FileOperation.Copy
+        });
+
+        Assert.Equal(0, result.RemovedEmptyFolders);
+        Assert.True(File.Exists(dir.Combine("src", "sub", "a.jpg")));
+    }
+
+    [Fact]
     public void HiddenOrSystemFiles_AreSkipped()
     {
         using var dir = new TempDir();

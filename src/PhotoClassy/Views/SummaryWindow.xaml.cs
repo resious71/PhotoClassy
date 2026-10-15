@@ -31,6 +31,9 @@ namespace PhotoClassy.Views
             if (result.FallbackDates > 0)
                 AddRow(StatsGrid, "수정일/생성일로 분류", $"{result.FallbackDates:N0}개 (EXIF 촬영 시간 없음)");
 
+            if (result.RemovedEmptyFolders > 0)
+                AddRow(StatsGrid, "삭제한 빈 폴더", $"{result.RemovedEmptyFolders:N0}개 (이동 후 비게 된 소스 폴더)");
+
             AddRow(TimeGrid, "소요 시간", TimeFormatter.Korean(result.Duration));
             AddRow(TimeGrid, "평균 처리 시간", TimeFormatter.PerFile(result.AveragePerFile));
             AddRow(TimeGrid, "시작 시간", result.StartTime.ToString("yyyy-MM-dd HH:mm:ss"));

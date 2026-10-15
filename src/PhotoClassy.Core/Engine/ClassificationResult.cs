@@ -38,6 +38,9 @@ namespace PhotoClassy.Core.Engine
         /// <summary>같은 파일명이 있어 이름을 바꾼 파일 수.</summary>
         public int Renamed { get; set; }
 
+        /// <summary>이동 모드에서 비게 되어 삭제한 소스 하위 폴더 수.</summary>
+        public int RemovedEmptyFolders { get; set; }
+
         /// <summary>대체 날짜(수정일/생성일)를 사용한 파일 수.</summary>
         public int FallbackDates { get; set; }
 
