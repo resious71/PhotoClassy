@@ -1,0 +1,18 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+
+  <PropertyGroup>
+    <OutputName>PhotoClassy</OutputName>
+    <Cultures>ko-KR</Cultures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Netfx.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PhotoClassy\PhotoClassy.csproj" />
+  </ItemGroup>
+
+</Project>

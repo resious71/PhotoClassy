@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D53F9F49-C7DD-456D-B3E5-18EF004B01DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoClassy.Core", "src\PhotoClassy.Core\PhotoClassy.Core.csproj", "{CDA38955-C75C-4C17-A5E6-82AC42D1A7D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3B8EE4B0-FAAA-40F3-A9A8-DCC7228DA7AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoClassy.Core.Tests", "tests\PhotoClassy.Core.Tests\PhotoClassy.Core.Tests.csproj", "{7492B661-7F7C-4760-B275-48E7ADD16D98}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDA38955-C75C-4C17-A5E6-82AC42D1A7D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDA38955-C75C-4C17-A5E6-82AC42D1A7D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDA38955-C75C-4C17-A5E6-82AC42D1A7D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDA38955-C75C-4C17-A5E6-82AC42D1A7D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7492B661-7F7C-4760-B275-48E7ADD16D98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7492B661-7F7C-4760-B275-48E7ADD16D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7492B661-7F7C-4760-B275-48E7ADD16D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7492B661-7F7C-4760-B275-48E7ADD16D98}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CDA38955-C75C-4C17-A5E6-82AC42D1A7D8} = {D53F9F49-C7DD-456D-B3E5-18EF004B01DA}
+		{7492B661-7F7C-4760-B275-48E7ADD16D98} = {3B8EE4B0-FAAA-40F3-A9A8-DCC7228DA7AE}
+	EndGlobalSection
+EndGlobal
